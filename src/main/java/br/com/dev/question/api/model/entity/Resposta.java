@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Version;
 
@@ -15,22 +16,29 @@ import javax.persistence.Version;
 public class Resposta {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private UUID uuid = UUID.randomUUID();
     private String descricao;
     private Boolean correta;
 	private LocalDateTime dataHoraCriacao = LocalDateTime.now();
 	@Version
-    private Long versao;
-
-    @ManyToOne
+	private Long versao;
+	
+	@ManyToOne
+	@JoinColumn(name = "questao_id", nullable = false)
 	private Questao questao;
 	
 	public Resposta() {
 	}
 
 	public Resposta(String descricao, Boolean correta) {
+		this.descricao = descricao;
+		this.correta = correta;
+	}
+
+	public Resposta(UUID uuid, String descricao, Boolean correta) {
+		this.uuid = uuid;
 		this.descricao = descricao;
 		this.correta = correta;
 	}
@@ -89,11 +97,5 @@ public class Resposta {
 		this.questao = questao;
 	}
 
-	@Override
-	public String toString() {
-		return "Resposta [correta=" + correta + ", dataHoraCriacao=" + dataHoraCriacao + ", descricao=" + descricao
-				+ ", id=" + id + ", questao=" + questao + ", uuid=" + uuid + ", versao=" + versao + "]";
-	}
-
-
+	
 }

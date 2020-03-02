@@ -30,8 +30,9 @@ import br.com.dev.question.api.dto.questao.QuestaoDTO;
 import br.com.dev.question.api.form.questao.CreateQuestaoForm;
 import br.com.dev.question.api.form.questao.UpdateQuestaoForm;
 import br.com.dev.question.api.model.entity.Questao;
+import br.com.dev.question.api.model.entity.Resposta;
 import br.com.dev.question.api.repository.QuestaoRepository;
-
+import br.com.dev.question.api.repository.RespostaRepository;
 
 @RestController
 @RequestMapping("/questoes")
@@ -39,60 +40,70 @@ public class QuestaoController {
 
     @Autowired
     private QuestaoRepository questaoRepository;
+    @Autowired
+    private RespostaRepository respostaRepository;
 
     @GetMapping
-    @Cacheable(value = "questoes") 
-    public Page<QuestaoDTO> get(@PageableDefault(sort = "dataHoraCriacao", 
-                                                  direction = Direction.DESC, 
-                                                  page = 0,
-                                                  size = 10) Pageable paginacao){
-        
-                        
+    @Cacheable(value = "questoes")
+    public Page<QuestaoDTO> get(
+            @PageableDefault(sort = "dataHoraCriacao", direction = Direction.DESC, page = 0, size = 10) Pageable paginacao) {
+
         return QuestaoDTO.converte(questaoRepository.findAll(paginacao));
     }
 
     @GetMapping("/{uuid}")
-    @Cacheable(value = "questaoUUID")
-    public ResponseEntity<DetalheQuestaoDTO> getUUID(@PathVariable("uuid") UUID uuid){
-      Optional<Questao> optional = questaoRepository.findByUuid(uuid);
-      
-      if(optional.isPresent()){
-        return ResponseEntity.ok(new DetalheQuestaoDTO(optional.get()));
-      }
-      return ResponseEntity.notFound().build();
+    public ResponseEntity<DetalheQuestaoDTO> getUUID(@PathVariable("uuid") UUID uuid) {
+        Optional<Questao> optional = questaoRepository.findByUuid(uuid);
+
+        if (optional.isPresent()) {
+            return ResponseEntity.ok(new DetalheQuestaoDTO(optional.get()));
+        }
+        return ResponseEntity.notFound().build();
     }
-    
+
     @PostMapping
-    @CacheEvict(value = {"questoes", "questoesUUID"}, allEntries = true)
+    @CacheEvict(value = { "questoes" }, allEntries = true)
     @Transactional
-    public ResponseEntity post(@RequestBody @Valid CreateQuestaoForm questaoFom, UriComponentsBuilder uriBuilder){
+    public ResponseEntity post(@RequestBody @Valid CreateQuestaoForm questaoFom, UriComponentsBuilder uriBuilder) {
         Questao questaoCadastrado = questaoRepository.save(questaoFom.converte());
+
+        for (Resposta resposta : questaoCadastrado.getRespostas()) {
+            resposta.setQuestao(questaoCadastrado);
+            respostaRepository.save(resposta);
+        }
+
         URI uri = uriBuilder.path("/simulados/{uuid}").buildAndExpand(questaoCadastrado.getUuid()).toUri();
         return ResponseEntity.created(uri).body(new QuestaoDTO(questaoCadastrado));
     }
 
     @PutMapping("/{uuid}")
-    @CacheEvict(value = {"questoes", "questoesUUID"}, allEntries = true)
+    @CacheEvict(value = { "questoes" }, allEntries = true)
     @Transactional
-    public ResponseEntity<DetalheQuestaoDTO> put(@PathVariable UUID uuid, @RequestBody @Valid UpdateQuestaoForm questaoForm){
+    public ResponseEntity<DetalheQuestaoDTO> put(@PathVariable UUID uuid, @RequestBody @Valid UpdateQuestaoForm questaoForm) {
         Optional<Questao> optional = questaoRepository.findByUuid(uuid);
-        if(optional.isPresent()){
-           Questao questao = questaoForm.atualizar(optional.get());
-           return ResponseEntity.ok(new DetalheQuestaoDTO(questao));
+        if (optional.isPresent()) {
+            Questao questao = questaoForm.atualizar(optional.get());
+
+            questao.getRespostas().forEach(r -> {
+                if (r.getUuid() == null) {
+                   respostaRepository.save(r);
+                }
+            });
+            return ResponseEntity.ok(new DetalheQuestaoDTO(questao));
         }
 
         return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{uuid}")
-    @CacheEvict(value = {"questoes", "questoesUUID"}, allEntries = true)
+    @CacheEvict(value = { "questoes" }, allEntries = true)
     @Transactional
-    public ResponseEntity delete(@PathVariable("uuid") UUID uuid){
+    public ResponseEntity delete(@PathVariable("uuid") UUID uuid) {
 
         Optional<Questao> optional = questaoRepository.findByUuid(uuid);
-        if(optional.isPresent()){
-           questaoRepository.delete(optional.get());
-           return ResponseEntity.noContent().build();
+        if (optional.isPresent()) {
+            questaoRepository.delete(optional.get());
+            return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }

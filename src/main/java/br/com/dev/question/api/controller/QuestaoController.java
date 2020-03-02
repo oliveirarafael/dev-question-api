@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import br.com.dev.question.api.dto.questao.DetalheQuestaoDTO;
 import br.com.dev.question.api.dto.questao.QuestaoDTO;
 import br.com.dev.question.api.form.questao.CreateQuestaoForm;
 import br.com.dev.question.api.form.questao.UpdateQuestaoForm;
@@ -52,11 +53,11 @@ public class QuestaoController {
 
     @GetMapping("/{uuid}")
     @Cacheable(value = "questaoUUID")
-    public ResponseEntity<QuestaoDTO> getUUID(@PathVariable UUID uuid){
+    public ResponseEntity<DetalheQuestaoDTO> getUUID(@PathVariable("uuid") UUID uuid){
       Optional<Questao> optional = questaoRepository.findByUuid(uuid);
-
+      
       if(optional.isPresent()){
-        return ResponseEntity.ok(new QuestaoDTO(optional.get()));
+        return ResponseEntity.ok(new DetalheQuestaoDTO(optional.get()));
       }
       return ResponseEntity.notFound().build();
     }
@@ -73,11 +74,11 @@ public class QuestaoController {
     @PutMapping("/{uuid}")
     @CacheEvict(value = {"questoes", "questoesUUID"}, allEntries = true)
     @Transactional
-    public ResponseEntity<QuestaoDTO> put(@PathVariable UUID uuid, @RequestBody @Valid UpdateQuestaoForm questaoForm){
+    public ResponseEntity<DetalheQuestaoDTO> put(@PathVariable UUID uuid, @RequestBody @Valid UpdateQuestaoForm questaoForm){
         Optional<Questao> optional = questaoRepository.findByUuid(uuid);
         if(optional.isPresent()){
            Questao questao = questaoForm.atualizar(optional.get());
-           return ResponseEntity.ok(new QuestaoDTO(questao));
+           return ResponseEntity.ok(new DetalheQuestaoDTO(questao));
         }
 
         return ResponseEntity.notFound().build();
@@ -88,7 +89,6 @@ public class QuestaoController {
     @Transactional
     public ResponseEntity delete(@PathVariable("uuid") UUID uuid){
 
-        System.out.println("UUDI: "+uuid);
         Optional<Questao> optional = questaoRepository.findByUuid(uuid);
         if(optional.isPresent()){
            questaoRepository.delete(optional.get());

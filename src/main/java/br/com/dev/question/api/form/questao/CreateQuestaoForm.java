@@ -33,7 +33,7 @@ public class CreateQuestaoForm {
 
 	public Questao converte() {
         List<Resposta> respostas = new ArrayList();
-        this.respostas.stream().map(respostaForm -> respostas.add(respostaForm.converte()));
+        this.respostas.stream().forEach(resposta -> respostas.add(resposta.converte()));
         return new Questao(this.titulo, this.descricao, respostas);
 	}
 }

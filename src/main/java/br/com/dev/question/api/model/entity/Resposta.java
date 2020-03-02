@@ -15,7 +15,7 @@ import javax.persistence.Version;
 public class Resposta {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private UUID uuid = UUID.randomUUID();
     private String descricao;
@@ -87,6 +87,12 @@ public class Resposta {
 
 	public void setQuestao(Questao questao) {
 		this.questao = questao;
+	}
+
+	@Override
+	public String toString() {
+		return "Resposta [correta=" + correta + ", dataHoraCriacao=" + dataHoraCriacao + ", descricao=" + descricao
+				+ ", id=" + id + ", questao=" + questao + ", uuid=" + uuid + ", versao=" + versao + "]";
 	}
 
 

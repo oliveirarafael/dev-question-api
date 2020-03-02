@@ -16,10 +16,10 @@ public class TokenService {
     
     private Date hoje;
 
-    @Value("${formula.bancaria.api.jwt.expiration}")
+    @Value("${dev.question.api.jwt.expiration}")
     private String expiration;
 
-    @Value("${formula.bancaria.api.jwt.secret}")
+    @Value("${dev.question.api.jwt.secret}")
     private String secret;
 
     private Date dataExpiracao;
@@ -29,7 +29,7 @@ public class TokenService {
         hoje = new Date();
         dataExpiracao = new Date(hoje.getTime() + Long.parseLong(expiration));
         return Jwts.builder()
-                   .setIssuer("API Formula Bancaria")
+                   .setIssuer("API Dev Question")
                    .setSubject(usuarioLogado.getId().toString())
                    .setIssuedAt(hoje)
                    .setExpiration(dataExpiracao)

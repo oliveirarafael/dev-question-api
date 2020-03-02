@@ -1,10 +1,11 @@
 package br.com.dev.question.api.model.entity;
 
+import static javax.persistence.CascadeType.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static javax.persistence.CascadeType.*;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -16,7 +17,7 @@ import javax.persistence.Version;
 public class Questao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 	private UUID uuid = UUID.randomUUID();
 	private String titulo;
@@ -26,7 +27,7 @@ public class Questao {
 	@Version
     private Long versao;
 	
-	@OneToMany(mappedBy = "questao", cascade = {PERSIST, REMOVE})
+	@OneToMany(mappedBy = "questao", cascade = {PERSIST, REMOVE, MERGE})
 	private List<Resposta> respostas;
 	
 	public Questao(){}
@@ -85,4 +86,11 @@ public class Questao {
 		this.respostas = respostas;
 	}
 
+	@Override
+	public String toString() {
+		return "Questao [dataHoraCriacao=" + dataHoraCriacao + ", descricao=" + descricao + ", id=" + id
+				+ ", respostas=" + respostas + ", titulo=" + titulo + ", uuid=" + uuid + ", versao=" + versao + "]";
+	}
+
+	
 }
